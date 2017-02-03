@@ -25,7 +25,6 @@ class Measurement(ndb.Model):
 
 @app.route('/publish')
 def publish():
-    """Return a friendly HTTP greeting."""
     secret = request.args.get('secret')
     identifier = request.args.get('id')
     for key, value in request.args.iteritems():
@@ -34,6 +33,15 @@ def publish():
         measurement = Measurement(identifier=identifier, type=key, value=value)
         measurement.put()
     return "Ok."
+
+
+@app.route('/show')
+def show():
+    measurements = Measurement.query().order(-Measurement.timestamp).fetch(20)
+    reply = []
+    for measurement in measurements:
+        reply.append("%s,%s,%s,%s<BR>" % (measurement.identifier, measurement.timestamp, measurement.type, measurement.value))
+    return "\n".join(reply)
 
 
 @app.errorhandler(404)
