@@ -5,7 +5,7 @@ app.config['DEBUG'] = True
 from google.appengine.ext import ndb
 
 import json
-
+import pytz
 
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
@@ -50,11 +50,20 @@ def show():
     return "\n".join(reply)
 
 
+def format_jsdate(dt,tz):
+    ## Format a datetime into a js Date()
+    ## Notice the -1 in the month.
+    dt = dt.astimezone(tz)
+    return "Date(%d,%d,%d,%d,%d,%d)" % (dt.year, dt.month-1, dt.day, dt.hour, dt.minute, dt.second)
+
+
 @app.route('/getdata')
 def getdata():
     identifier = request.args.get('id')
     type_ = request.args.get('type')
     callback = request.args.get('callback')
+    tz = request.args.get('tz','UTC')
+    tz = pytz.timezone(tz)
     measurements = Measurement.query(Measurement.identifier == identifier, Measurement.type == type_).order(
         -Measurement.timestamp).fetch(12*12*48) # 12 every hour for two days?
     result = {}
@@ -62,7 +71,9 @@ def getdata():
          {'id': 'B', 'label': '%s' % type_, 'type': 'number'}, ]
     rows = []
     for measurement in measurements[::-1]:
-        rows.append({'c':[{'v':measurement.timestamp.strftime("Date(%Y,%m,%d,%H,%M,%S)")},{'v':float(measurement.value)}]})
+        ts = measurement.timestamp
+        ts = ts.replace(tzinfo=pytz.timezone('UTC')) # Datastore is in UTC
+        rows.append({'c':[{'v':format_jsdate(ts,tz)},{'v':float(measurement.value)}]})
     result['rows'] = rows
 
     if callback:
