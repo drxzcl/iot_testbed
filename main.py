@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -12,8 +12,12 @@ import pytz
 
 @app.route('/')
 def hello():
-    """Return a friendly HTTP greeting."""
-    return 'Hello World!'
+    return render_template('chart.template.html', id = '')
+
+
+@app.route('/chart/<identifier>/<type_>')
+def chart(identifier, type_):
+    return render_template('chart.template.html', id = identifier, type = type_)
 
 
 class Measurement(ndb.Model):
