@@ -15,8 +15,7 @@
 
         // JSONP request
         var jsonData = $.ajax({
-          //url: 'http://localhost:8080/getdata?id=SHGDD&type=temp&tz=Europe/Amsterdam',
-          url: 'http://iot-testbed.appspot.com/getdata?id={{  id }}&type={{ type }}&tz=Europe/Amsterdam',
+          url: '/getdata?id={{  id }}&type={{ type }}&tz=Europe/Amsterdam',
           dataType: 'jsonp',
         }).done(function (results) {
 
