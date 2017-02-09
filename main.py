@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -6,13 +6,16 @@ from google.appengine.ext import ndb
 
 import json
 import pytz
+import datetime
+import random
 
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
 
 @app.route('/')
 def hello():
-    return render_template('chart.template.html', id = '')
+    # Redirect to a chart
+    return redirect("/chart/zomgbox-C1EB/temp", code=302)
 
 
 @app.route('/chart/<identifier>/<type_>')
@@ -86,6 +89,21 @@ def getdata():
     else:
         return json.dumps(result)
 
+
+@app.route('/insert-testdata')
+def insert_testdata():
+    """
+        Insert test data
+    """
+    now = datetime.datetime.now(pytz.timezone("UTC"))
+    interval = datetime.timedelta(minutes=5)
+    number = 10
+    ts = now - number * interval
+    while ts < now:
+        measurement = Measurement(identifier='TEST-ID', type='test', value="%.2f" % random.gauss(1,0.05), timestamp = ts.replace(tzinfo=None))
+        measurement.put()
+        ts += interval
+    return "Ok."
 
 @app.errorhandler(404)
 def page_not_found(e):
