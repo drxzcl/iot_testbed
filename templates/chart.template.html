@@ -15,7 +15,7 @@
 
         // JSONP request
         var jsonData = $.ajax({
-          url: '/getdata?id={{  id }}&type={{ type }}&tz=Europe/Amsterdam',
+          url: '/getdata?id={{  id }}&type={{ type }}&since={{ since }}&tz=Europe/Amsterdam',
           dataType: 'jsonp',
         }).done(function (results) {
 

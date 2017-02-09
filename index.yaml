@@ -21,4 +21,23 @@ indexes:
   - name: identifier
   - name: type
   - name: timestamp
+
+- kind: Measurement
+  properties:
+  - name: identifier
+  - name: type
+  - name: timestamp
     direction: desc
+
+- kind: MeasurementBlock
+  properties:
+  - name: count
+  - name: identifier
+  - name: type
+  - name: first
+
+- kind: MeasurementBlock
+  properties:
+  - name: identifier
+  - name: type
+  - name: last
