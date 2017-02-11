@@ -61,13 +61,13 @@ class MeasurementBlock(ndb.Model):
 
 
 def do_publish(identifier, type_, value, ts=None):
-    indexdata(identifier, type_)
     measurement = Measurement(identifier=identifier, type=type_, value=value)
     if ts is not None:
         measurement.timestamp = ts
     measurement.put()
 
-    if random.random() < .1:
+    if random.random() < .07:
+        logging.info("Starting indexing on %s %s" % (identifier, type_))
         indexdata(identifier, type_)
 
 
@@ -107,6 +107,7 @@ def indexblocks(identifier, type_, depth):
     blocks = MeasurementBlock.query(MeasurementBlock.identifier == identifier, MeasurementBlock.type == type_,
                                     MeasurementBlock.count == BLOCK_SIZE ** depth).order(MeasurementBlock.first).fetch(
         keys_only=True)
+    logging.info('There are %d blocks at size %d.' % (len(blocks), BLOCK_SIZE ** depth))
     i = 0
     for blocknr in range(len(blocks) // BLOCK_SIZE):
         blockdata = []
@@ -133,11 +134,11 @@ def indexdata(identifier, type_):
 
     # Start at block depth N-1, aggregate blocks.
     depth = BLOCK_DEPTH - 1
-    count = BLOCK_SIZE ** depth
 
     # aggregate
     # now aggregate the individual measurements
     measurements = Measurement.all(identifier, type_).order(Measurement.timestamp).fetch(keys_only=True)
+    logging.info('There are %d measurements' % (len(measurements), ))
     i = 0
     for blocknr in range(len(measurements) // BLOCK_SIZE):
         blockdata = []
