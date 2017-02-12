@@ -69,7 +69,7 @@ def do_publish(identifier, type_, value, ts=None):
 
     if random.random() < 0.08 : # A bit more than 1/15
         logging.info("Starting indexing on %s %s" % (identifier, type_))
-        deferred.defer(indexdata, identifier, type_)
+        deferred.defer(indexdata, identifier, type_, _queue="index-queue")
 
 
 @app.route('/publish')

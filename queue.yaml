@@ -1,0 +1,3 @@
+queue:
+- name: index-queue
+  max_concurrent_requests: 1
