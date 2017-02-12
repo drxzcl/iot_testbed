@@ -3,6 +3,7 @@ from flask import Flask, request, render_template, redirect
 app = Flask(__name__)
 app.config['DEBUG'] = True
 from google.appengine.ext import ndb
+from google.appengine.ext import deferred
 
 import json
 import pytz
@@ -66,9 +67,9 @@ def do_publish(identifier, type_, value, ts=None):
         measurement.timestamp = ts
     measurement.put()
 
-    if random.random() < .07:
+    if random.random() < 0.08 : # A bit more than 1/15
         logging.info("Starting indexing on %s %s" % (identifier, type_))
-        indexdata(identifier, type_)
+        deferred.defer(indexdata, identifier, type_)
 
 
 @app.route('/publish')
