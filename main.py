@@ -67,7 +67,7 @@ def do_publish(identifier, type_, value, ts=None):
         measurement.timestamp = ts
     measurement.put()
 
-    if random.random() < 0.08 : # A bit more than 1/15
+    if random.random() < 0.08:  # A bit more than 1/15
         logging.info("Starting indexing on %s %s" % (identifier, type_))
         deferred.defer(indexdata, identifier, type_, _queue="index-queue")
 
@@ -110,59 +110,55 @@ def indexblocks(identifier, type_, depth):
         keys_only=True)
     logging.info('There are %d blocks at size %d.' % (len(blocks), BLOCK_SIZE ** depth))
     i = 0
-    for blocknr in range(len(blocks) // BLOCK_SIZE):
-        blockdata = []
-        first, last = datetime.datetime(2999, 12, 31), datetime.datetime(1000, 1, 1)
-        for bnr in range(BLOCK_SIZE):
-            block = blocks[i].get()
-            i += 1
-            first = min(first, block.first)
-            last = max(last, block.last)
-            blockdata.extend(json.loads(block.values))
-            block.key.delete()
+    if len(blocks) >= BLOCK_SIZE:
+        blocks = ndb.get_multi(blocks)
+        for blocknr in range(len(blocks) // BLOCK_SIZE):
+            blockdata = []
+            first, last = datetime.datetime(2999, 12, 31), datetime.datetime(1000, 1, 1)
+            for bnr in range(BLOCK_SIZE):
+                block = blocks[i]
+                i += 1
+                first = min(first, block.first)
+                last = max(last, block.last)
+                blockdata.extend(json.loads(block.values))
+                block.key.delete()
 
-        metablock = MeasurementBlock(identifier=identifier, type=type_, count=BLOCK_SIZE ** (depth + 1),
-                                     first=first, last=last, values=json.dumps(blockdata))
-        metablock.put()
+            metablock = MeasurementBlock(identifier=identifier, type=type_, count=BLOCK_SIZE ** (depth + 1),
+                                         first=first, last=last, values=json.dumps(blockdata))
+            metablock.put()
 
     return "Ok."
 
 
 @app.route('/indexdata/<identifier>/<type_>')
 def indexdata(identifier, type_):
-    # identifier = request.args.get('id')
-    # type_ = request.args.get('type')
-
-    # Start at block depth N-1, aggregate blocks.
-    depth = BLOCK_DEPTH - 1
-
-    # aggregate
-    # now aggregate the individual measurements
+    # aggregate the individual measurements
     measurements = Measurement.all(identifier, type_).order(Measurement.timestamp).fetch(keys_only=True)
     logging.info('There are %d measurements' % (len(measurements), ))
     i = 0
-    for blocknr in range(len(measurements) // BLOCK_SIZE):
-        blockdata = []
-        to_delete = []
-        first, last = datetime.datetime(2999, 12, 31), datetime.datetime(1000, 1, 1)
-        for mnr in range(BLOCK_SIZE):
-            measurement = measurements[i].get()
-            if not measurement:
-                return "Odd stuff."
-            i += 1
-            ts = measurement.timestamp
-            blockdata.append((int(time.mktime(ts.timetuple())), measurement.value))
-            first = min(first, ts)
-            last = max(last, ts)
-            to_delete.append(measurement.key)
+    if len(measurements) >= BLOCK_SIZE:
+        measurements = ndb.get_multi(measurements)
+        for blocknr in range(len(measurements) // BLOCK_SIZE):
+            blockdata = []
+            to_delete = []
+            first, last = datetime.datetime(2999, 12, 31), datetime.datetime(1000, 1, 1)
+            for mnr in range(BLOCK_SIZE):
+                measurement = measurements[i]
+                if not measurement:
+                    return "Odd stuff."
+                i += 1
+                ts = measurement.timestamp
+                blockdata.append((int(time.mktime(ts.timetuple())), measurement.value))
+                first = min(first, ts)
+                last = max(last, ts)
+                to_delete.append(measurement.key)
 
-        # Full block, add it
-        block = MeasurementBlock(identifier=identifier, type=type_,
-                                 count=BLOCK_SIZE, first=first, last=last,
-                                 values=json.dumps(blockdata))
-        block.put()
-        for key in to_delete:
-            key.delete()
+            # Full block, add it
+            block = MeasurementBlock(identifier=identifier, type=type_,
+                                     count=BLOCK_SIZE, first=first, last=last,
+                                     values=json.dumps(blockdata))
+            block.put()
+            ndb.delete_multi(to_delete)
 
     indexblocks(identifier, type_, 1)
     indexblocks(identifier, type_, 2)
