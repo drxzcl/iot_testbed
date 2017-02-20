@@ -19,7 +19,7 @@ import logging
 @app.route('/')
 def hello():
     # Redirect to a chart
-    return redirect("/chart/zomgbox-C1EB/temp", code=302)
+    return redirect("/show", code=302)
 
 
 @app.route('/chart/<identifier>/<type_>')
@@ -85,12 +85,16 @@ def publish():
 
 @app.route('/show')
 def show():
-    measurements = Measurement.query().order(-Measurement.timestamp).fetch(20)
+    measurements = Measurement.query(projection=[Measurement.identifier, Measurement.type], distinct=True).fetch()
     reply = []
+
+    charturl = "/chart/%s/%s"
+
     for measurement in measurements:
-        reply.append(
-            "%s,%s,%s,%s<BR>" % (measurement.identifier, measurement.timestamp, measurement.type, measurement.value))
+        theurl = charturl % (measurement.identifier, measurement.type)
+        reply.append("<a href='%s'>%s (%s)</a><BR>" % (theurl, measurement.identifier, measurement.type))
     return "\n".join(reply)
+
 
 
 def format_jsdate(dt, tz):
