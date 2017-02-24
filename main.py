@@ -1,7 +1,4 @@
 from flask import Flask, request, render_template, redirect
-
-app = Flask(__name__)
-app.config['DEBUG'] = True
 from google.appengine.ext import deferred
 
 import json
@@ -14,6 +11,9 @@ import logging
 import models
 import index
 import alertfunctions
+
+app = Flask(__name__)
+app.config['DEBUG'] = True
 
 
 @app.route('/')
@@ -65,8 +65,8 @@ def show():
 
 
 def format_jsdate(dt, tz):
-    ## Format a datetime into a js Date()
-    ## Notice the -1 in the month.
+    # Format a datetime into a js Date()
+    # Notice the -1 in the month.
     dt = dt.astimezone(tz)
     return "Date(%d,%d,%d,%d,%d,%d)" % (dt.year, dt.month - 1, dt.day, dt.hour, dt.minute, dt.second)
 
@@ -117,7 +117,6 @@ def alerts():
         Process alerts
     """
     logging.info("Alerts running")
-
 
     now = datetime.datetime.utcnow()
     for alert in models.Alert.query().fetch():
