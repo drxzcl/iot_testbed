@@ -1,0 +1,4 @@
+cron:
+- description: process alerts
+  url: /tasks/alerts
+  schedule: every 5 minutes

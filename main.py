@@ -61,6 +61,20 @@ class MeasurementBlock(ndb.Model):
             cls.first)
 
 
+class Alert(ndb.Model):
+    identifier = ndb.StringProperty()
+    type = ndb.StringProperty()
+    value = ndb.StringProperty()
+    last_triggered = ndb.DateTimeProperty()
+    cooldown = ndb.IntegerProperty()
+
+
+
+
+
+
+
+
 def do_publish(identifier, type_, value, ts=None):
     measurement = Measurement(identifier=identifier, type=type_, value=value)
     if ts is not None:
@@ -206,6 +220,16 @@ def getdata():
         return callback + "(" + json.dumps(result) + ")"
     else:
         return json.dumps(result)
+
+
+@app.route('/tasks/alerts')
+def alerts():
+    """
+        Process alerts
+    """
+    logging.info("Alerts running")
+    return "Ok."
+
 
 
 @app.route('/insert-testdata')
