@@ -1,3 +1,4 @@
+import datetime
 from google.appengine.ext import ndb
 
 
@@ -38,5 +39,7 @@ class Alert(ndb.Model):
     identifier = ndb.StringProperty()
     type = ndb.StringProperty()
     value = ndb.StringProperty()
-    last_triggered = ndb.DateTimeProperty()
-    cooldown = ndb.IntegerProperty()
+    last_triggered = ndb.DateTimeProperty(default=datetime.datetime(1990, 1, 1, 0, 0, 0))
+    cooldown = ndb.IntegerProperty(default=3600)
+    higher = ndb.BooleanProperty(default=True)
+    alertfunction = ndb.StringProperty()

@@ -13,6 +13,7 @@ import logging
 
 import models
 import index
+import alertfunctions
 
 
 @app.route('/')
@@ -116,6 +117,28 @@ def alerts():
         Process alerts
     """
     logging.info("Alerts running")
+
+
+    now = datetime.datetime.utcnow()
+    for alert in models.Alert.query().fetch():
+        logging.info("Alert: %r" % alert)
+        if alert.last_triggered + datetime.timedelta(seconds=alert.cooldown) > now:
+            continue
+        # Check if alerts is triggered
+        measurements = models.Measurement.last(alert.identifier, alert.type).fetch(1)
+        if not measurements:
+            continue
+        measurement = measurements[0]
+        if (alert.higher and (float(measurement.value) > float(alert.value))) or \
+                (not alert.higher and (float(measurement.value) < float(alert.value))):
+            # alert!
+            funcname, params = json.loads(alert.alertfunction)
+            func = getattr(alertfunctions, funcname)
+            func(measurement, params)
+            # update the alert
+            alert.last_triggered = now
+            alert.put()
+
     return "Ok."
 
 
