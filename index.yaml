@@ -13,13 +13,13 @@ indexes:
 - kind: Measurement
   properties:
   - name: identifier
-  - name: type
+  - name: timestamp
+    direction: desc
 
 - kind: Measurement
   properties:
   - name: identifier
-  - name: timestamp
-    direction: desc
+  - name: type
 
 - kind: Measurement
   properties:
