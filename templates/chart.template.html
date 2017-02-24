@@ -16,7 +16,7 @@
         // JSONP request
         var jsonData = $.ajax({
           url: '/getdata?id={{  id }}&type={{ type }}&since={{ since }}&tz=Europe/Amsterdam',
-          dataType: 'jsonp',
+          dataType: 'jsonp'
         }).done(function (results) {
 
           var data = new google.visualization.DataTable(results);
@@ -31,28 +31,9 @@
             displayAnnotationsFilter: true,
             displayDateBarSeparator: true,
             height: 400,
-            //table: {
-            //  sortAscending: false,
-            //},
-            //  sortColumn: 1
+
             displayLegendValues: true,
-            //min: 0, // CoreCharts
-            //minValue: 0, // CoreCharts
-            //scaleColumns: [0,1],
-            //scaleType: 'allfixed',
-            //scaleType: 'allmaximized',
-            // series: {
-            //   // Gives each series an axis name that matches the Y-axis below.
-            //   0: {axis: 'Temps'},
-            //   1: {axis: 'Daylight'}
-            // },
-            // axes: {
-            //   // Adds labels to each axis; they don't have to match the axis names.
-            //   y: {
-            //     Temps: {label: 'Temps (Celsius)'},
-            //     Daylight: {label: 'Daylight'}
-            //   }
-            // }
+
             zoomButtonsOrder: [
                '30-minutes', '1-hour', '2-hours', '4-hours','1-day', '5-days', '1-week',
               '1-month', '3-months', '6-months', '1-year', 'max'
@@ -96,8 +77,7 @@
 
       // load chart lib
       google.load('visualization', '1', {
-        packages: ['corechart'],
-        packages:['annotationchart']
+        packages: ['corechart', 'annotationchart']
       });
 
       // call drawChart once google charts is loaded
