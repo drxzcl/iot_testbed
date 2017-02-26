@@ -155,6 +155,10 @@ def insert_testdata():
         ts += interval
     return "Ok."
 
+@app.route('/manage/sensor/<identifier>')
+def manage_sensor(identifier):
+    return identifier
+
 
 @app.errorhandler(404)
 def page_not_found(e):

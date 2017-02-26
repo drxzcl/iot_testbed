@@ -3,6 +3,9 @@ api_version: 1
 threadsafe: yes
 
 handlers:
+- url: /manage/.*
+  script: main.app
+  login: required
 - url: /tasks/alerts
   script: main.app
   login: admin
