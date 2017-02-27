@@ -9,7 +9,7 @@ import time
 import logging
 
 import models
-import index
+import consolidate
 import alertfunctions
 
 app = Flask(__name__)
@@ -36,13 +36,20 @@ def do_publish(identifier, type_, value, ts=None):
 
     if random.random() < 0.08:  # A bit more than 1/15
         logging.info("Starting indexing on %s %s" % (identifier, type_))
-        deferred.defer(index.indexdata, identifier, type_, _queue="index-queue")
+        deferred.defer(consolidate.consolidate_measurements, identifier, type_, _queue="index-queue")
 
 
 @app.route('/publish')
 def publish():
     secret = request.args.get('secret')
     identifier = request.args.get('id')
+
+    # first verify if we're allowed to publish
+    sensor = models.Sensor.query(models.Sensor.identifier == identifier).fetch()
+    if not sensor or sensor.secret != secret:
+        return "Please specify the correct secret!", 403
+
+    # then publish the data to the specified channels.
     for key, value in request.args.iteritems():
         if key in ("id", "secret"):
             continue
@@ -154,6 +161,7 @@ def insert_testdata():
         do_publish('TEST-ID', 'test', "%.2f" % random.gauss(1, 0.05), ts.replace(tzinfo=None))
         ts += interval
     return "Ok."
+
 
 @app.route('/manage/sensor/<identifier>')
 def manage_sensor(identifier):

@@ -2,6 +2,16 @@ import datetime
 from google.appengine.ext import ndb
 
 
+
+class Sensor(ndb.Model):
+    """
+        Manages the metadata of a single sensor.
+        The shared "secret" lives here.
+    """
+    identifier = ndb.StringProperty()
+    secret = ndb.StringProperty()
+
+
 class Measurement(ndb.Model):
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     identifier = ndb.StringProperty()

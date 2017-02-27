@@ -11,7 +11,7 @@ BLOCK_SIZE = 15
 
 # BLOCK_DEPTH = 3 # Currently unused.
 
-def indexblocks(identifier, type_, depth):
+def consolidate_blocks(identifier, type_, depth):
     blocks = MeasurementBlock.query(MeasurementBlock.identifier == identifier, MeasurementBlock.type == type_,
                                     MeasurementBlock.count == BLOCK_SIZE ** depth).order(MeasurementBlock.first).fetch(
         keys_only=True)
@@ -37,7 +37,7 @@ def indexblocks(identifier, type_, depth):
     return "Ok."
 
 
-def indexdata(identifier, type_):
+def consolidate_measurements(identifier, type_):
     # aggregate the individual measurements
     measurements = Measurement.all(identifier, type_).order(Measurement.timestamp).fetch(keys_only=True)
     logging.info('There are %d measurements' % (len(measurements),))
@@ -66,7 +66,7 @@ def indexdata(identifier, type_):
             block.put()
             ndb.delete_multi(to_delete)
 
-    indexblocks(identifier, type_, 1)
-    indexblocks(identifier, type_, 2)
+    consolidate_blocks(identifier, type_, 1)
+    consolidate_blocks(identifier, type_, 2)
 
     return "Ok."
