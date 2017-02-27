@@ -35,7 +35,6 @@ def do_publish(identifier, type_, value, ts=None):
     measurement.put()
 
     if random.random() < 0.08:  # A bit more than 1/15
-        logging.info("Starting indexing on %s %s" % (identifier, type_))
         deferred.defer(consolidate.consolidate_measurements, identifier, type_, _queue="index-queue")
 
 
@@ -123,11 +122,8 @@ def alerts():
     """
         Process alerts
     """
-    logging.info("Alerts running")
-
     now = datetime.datetime.utcnow()
     for alert in models.Alert.query().fetch():
-        logging.info("Alert: %r" % alert)
         if alert.last_triggered + datetime.timedelta(seconds=alert.cooldown) > now:
             continue
         # Check if alerts is triggered
