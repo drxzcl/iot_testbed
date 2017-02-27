@@ -2,3 +2,6 @@ cron:
 - description: process alerts
   url: /tasks/alerts
   schedule: every 5 minutes
+- description: consolidate
+  url: /tasks/consolidate
+  schedule: every 30 minutes

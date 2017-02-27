@@ -6,7 +6,7 @@ handlers:
 - url: /manage/.*
   script: main.app
   login: required
-- url: /tasks/alerts
+- url: /tasks/.*
   script: main.app
   login: admin
 - url: /_ah/queue/deferred

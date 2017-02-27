@@ -144,6 +144,21 @@ def alerts():
     return "Ok."
 
 
+@app.route('/tasks/consolidate')
+def tasks_consolidate():
+    """
+        Process consolidations
+    """
+
+    measurements = models.Measurement.query(projection=[models.Measurement.identifier, models.Measurement.type],
+                                            distinct=True).fetch()
+
+    for measurement in measurements:
+        consolidate.consolidate_measurements(measurement.identifier, measurement.type)
+
+    return "Ok."
+
+
 @app.route('/insert-testdata')
 def insert_testdata():
     """
