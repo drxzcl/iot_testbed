@@ -46,7 +46,7 @@ def publish():
 
     # first verify if we're allowed to publish
     sensor = models.Sensor.query(models.Sensor.identifier == identifier).fetch()
-    if not sensor or sensor.secret != secret:
+    if not sensor or sensor[0].secret != secret:
         return "Please specify the correct secret!", 403
 
     # then publish the data to the specified channels.
