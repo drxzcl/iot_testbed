@@ -10,6 +10,7 @@ class Sensor(ndb.Model):
     """
     identifier = ndb.StringProperty()
     secret = ndb.StringProperty()
+    consolidate_every = ndb.IntegerProperty(default=0)
 
 
 class Measurement(ndb.Model):

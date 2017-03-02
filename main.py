@@ -28,14 +28,15 @@ def chart(identifier, type_):
     return render_template('chart.template.html', id=identifier, type=type_, since=since)
 
 
-def do_publish(identifier, type_, value, ts=None):
+def do_publish(identifier, type_, value, consolidate_every, ts=None):
     measurement = models.Measurement(identifier=identifier, type=type_, value=value)
     if ts is not None:
         measurement.timestamp = ts
     measurement.put()
 
-    if random.random() < 0.08:  # A bit more than 1/15
-        deferred.defer(consolidate.consolidate_measurements, identifier, type_, _queue="index-queue")
+    if consolidate_every:
+        if random.random() < 1.0 / consolidate_every:  # consolidate every consolidate_every calls on average
+            deferred.defer(consolidate.consolidate_measurements, identifier, type_, _queue="index-queue")
 
 
 @app.route('/publish')
@@ -52,7 +53,7 @@ def publish():
     for key, value in request.args.iteritems():
         if key in ("id", "secret"):
             continue
-        do_publish(identifier, key, value)
+        do_publish(identifier, key, value, sensor[0].consolidate_every)
     return "Ok."
 
 
@@ -169,7 +170,7 @@ def insert_testdata():
     number = 117
     ts = now - number * interval
     while ts < now:
-        do_publish('TEST-ID', 'test', "%.2f" % random.gauss(1, 0.05), ts.replace(tzinfo=None))
+        do_publish('TEST-ID', 'test', "%.2f" % random.gauss(1, 0.05), 0, ts=ts.replace(tzinfo=None))
         ts += interval
     return "Ok."
 
