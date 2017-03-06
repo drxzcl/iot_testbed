@@ -65,10 +65,12 @@ def show():
 
     charturl = "/chart/%s/%s"
 
+    entries = []
     for measurement in measurements:
         theurl = charturl % (measurement.identifier, measurement.type)
-        reply.append("<a href='%s'>%s (%s)</a><BR>" % (theurl, measurement.identifier, measurement.type))
-    return "\n".join(reply)
+        entries.append((theurl, measurement.identifier, measurement.type))
+
+    return render_template('show.template.html', entries=entries)
 
 
 def format_jsdate(dt, tz):
