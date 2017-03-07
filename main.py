@@ -41,6 +41,11 @@ def do_publish(identifier, type_, value, consolidate_every, ts=None):
 
 @app.route('/publish')
 def publish():
+    # Is this http or https?
+    https = request.url.startswith('https')
+    if not https:
+        logging.warning('Measurements published over insecure connection!')
+
     secret = request.args.get('secret')
     identifier = request.args.get('id')
 
@@ -54,6 +59,9 @@ def publish():
         if key in ("id", "secret"):
             continue
         do_publish(identifier, key, value, sensor[0].consolidate_every)
+
+    if not https:
+        return "Please connect over https. Support for http will go away soon."
     return "Ok."
 
 
