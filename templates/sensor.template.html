@@ -1,4 +1,89 @@
 {% extends "base.template.html" %}
-{% block title %}{{ sensor }}{% endblock %}
+{% block title %}{{ sensor.name }}{% endblock %}
+{% block head %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <!-- EXAMPLE SCRIPT -->
+    <script>
+
+        // onload callback
+        function drawChart() {
+
+            // JSONP request
+            var jsonData = $.ajax({
+                url: '/getdata?id={{  sensor.identifier }}&type={{ sensor.measurements[0] }}&since={{ 0 }}&tz=Europe/Amsterdam',
+                dataType: 'jsonp'
+            }).done(function (results) {
+
+                var data = new google.visualization.DataTable(results);
+                var chart = new google.visualization.AnnotationChart($('#chart').get(0));
+
+                //add listener for resizing buttons
+                google.visualization.events.addListener(chart, 'ready', onReady);
+
+                chart.draw(data, {
+                    title: 'There is no I in Eagle',
+                    displayAnnotations: true,
+                    displayAnnotationsFilter: true,
+                    displayDateBarSeparator: true,
+                    height: 400,
+
+                    displayLegendValues: true,
+
+                    zoomButtonsOrder: [
+                        '30-minutes', '1-hour', '2-hours', '4-hours', '1-day', '5-days', '1-week',
+                        '1-month', '3-months', '6-months', '1-year', 'max'
+                    ],
+                    zoomButtons: {
+                        '30-minutes': {'label': '1/2h', 'offset': [0, 30, 0]},
+                        '1-hour': {'label': '1h', 'offset': [1, 0, 0]},
+                        '2-hours': {'label': '2h', 'offset': [2, 0, 0]},
+                        '4-hours': {'label': '4h', 'offset': [4, 0, 0]},
+                        '1-day': {'label': '1d', 'offset': [1, 0, 0, 0, 0]},
+                        '5-days': {'label': '5d', 'offset': [5, 0, 0, 0, 0]},
+                        '1-week': {'label': '1w', 'offset': [7, 0, 0, 0, 0]},
+                        '1-month': {'label': '1m', 'offset': [1, 0, 0, 0, 0, 0]},
+                        '3-months': {'label': '3m', 'offset': [3, 0, 0, 0, 0, 0]},
+                        '6-months': {'label': '6m', 'offset': [6, 0, 0, 0, 0, 0]},
+                        '1-year': {'label': '1y', 'offset': [1, 0, 0, 0, 0, 0, 0]},
+                        'max': {
+                            'label': 'max',
+                            'range': {
+                                'start': null,
+                                'end': null
+                            }
+                        }
+                    }
+
+                });
+
+            });
+
+        }
+
+        function onReady() {
+            var x = document.getElementById('chart_AnnotationChart_zoomControlContainer').getElementsByTagName('button');
+            document.getElementById('chart_AnnotationChart_zoomControlContainer').style.fontSize = '24px';
+
+            for (var i = 0; i < x.length; i++) {
+                x[i].style.height = '40px';
+                x[i].style.fontSize = '24px';
+            }
+        }
+
+        // load chart lib
+        google.load('visualization', '1', {
+            packages: ['corechart', 'annotationchart']
+        });
+
+        // call drawChart once google charts is loaded
+        google.setOnLoadCallback(drawChart);
+    </script>
+
+
+{% endblock %}
 {% block content %}
+    <div id="chart" style="width: 100%;"></div>
 {% endblock %}

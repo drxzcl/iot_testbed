@@ -96,7 +96,9 @@ def sensor_id(identifier):
     if not sensor:
         return "No such sensor", 404
     sensor = sensor[0]
-    return render_template('sensor.template.html', sensor=identifier)
+    if not sensor.name:
+        sensor.name = sensor.identifier
+    return render_template('sensor.template.html', sensor=sensor)
 
 
 @app.route('/getdata')
@@ -208,7 +210,8 @@ def insert_testdata():
     # sensor = models.Sensor(identifier="TEST-ID", secret="")
     # sensor.put()
     while ts < now:
-        do_publish('TEST-ID', 'test', "%.2f" % random.gauss(1, 0.05), 0, ts=ts.replace(tzinfo=None))
+        for t in ['test', 'tust', 'tost']:
+            do_publish('TEST-ID', t, "%.2f" % random.gauss(1, 0.05), 0, ts=ts.replace(tzinfo=None))
         ts += interval
     return "Ok."
 
