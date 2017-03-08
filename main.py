@@ -1,3 +1,5 @@
+import collections
+
 from flask import Flask, request, render_template, redirect
 from google.appengine.ext import deferred
 
@@ -88,6 +90,15 @@ def format_jsdate(dt, tz):
     return "Date(%d,%d,%d,%d,%d,%d)" % (dt.year, dt.month - 1, dt.day, dt.hour, dt.minute, dt.second)
 
 
+@app.route('/sensor/<identifier>')
+def sensor_id(identifier):
+    sensor = models.Sensor.query(models.Sensor.identifier == identifier).fetch()
+    if not sensor:
+        return "No such sensor", 404
+    sensor = sensor[0]
+    return render_template('sensor.template.html', sensor=identifier)
+
+
 @app.route('/getdata')
 def getdata():
     identifier = request.args.get('id')
@@ -164,8 +175,23 @@ def tasks_consolidate():
     measurements = models.Measurement.query(projection=[models.Measurement.identifier, models.Measurement.type],
                                             distinct=True).fetch()
 
+    measurements_by_sensor = collections.defaultdict(set)
+
     for measurement in measurements:
+        measurements_by_sensor[measurement.identifier].add(measurement.type)
         consolidate.consolidate_measurements(measurement.identifier, measurement.type)
+
+    # Update the measurement list in the sensor entry
+    for identifier in measurements_by_sensor.keys():
+        sensor = models.Sensor.query(models.Sensor.identifier == identifier).fetch()
+        if not sensor:
+            logging.warning('Sensor %r has measurements but no sensor entry!' % identifier)
+            continue
+        sensor = sensor[0]
+        l = len(sensor.measurements)
+        sensor.measurements = list(set(sensor.measurements).union(measurements_by_sensor[identifier]))
+        if len(sensor.measurements) > l:
+            sensor.put()
 
     return "Ok."
 
@@ -179,6 +205,8 @@ def insert_testdata():
     interval = datetime.timedelta(minutes=5)
     number = 117
     ts = now - number * interval
+    # sensor = models.Sensor(identifier="TEST-ID", secret="")
+    # sensor.put()
     while ts < now:
         do_publish('TEST-ID', 'test', "%.2f" % random.gauss(1, 0.05), 0, ts=ts.replace(tzinfo=None))
         ts += interval
