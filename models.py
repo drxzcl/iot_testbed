@@ -47,6 +47,10 @@ class MeasurementBlock(ndb.Model):
         return cls.query(cls.identifier == identifier, cls.type == type_, cls.count == count, cls.last > since).order(
             cls.first)
 
+    @classmethod
+    def last_block(cls, identifier, type_):
+        return cls.query(cls.identifier == identifier, cls.type == type_).order(-cls.last)
+
 
 class Alert(ndb.Model):
     identifier = ndb.StringProperty()

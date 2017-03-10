@@ -61,6 +61,28 @@
 
             });
 
+            // Draw the gauge
+            var jsonData2 = $.ajax({
+                url: '/getlast/{{  sensor.identifier }}/{{ sensor.measurements[0] }}',
+                dataType: 'jsonp'
+            }).done(function (results) {
+                var data = google.visualization.arrayToDataTable([
+                    ['Label', 'Value'],
+                    ['{{ sensor.measurements[0] }}', results],
+                ]);
+
+                var options = {
+                    width: 400, height: 120,
+                    redFrom: 90, redTo: 100,
+                    yellowFrom: 75, yellowTo: 90,
+                    minorTicks: 5
+                };
+
+                var chart = new google.visualization.Gauge(document.getElementById('gauge'));
+
+                chart.draw(data, options);
+
+            }).fail(function (xhr, status, errorThrown) {alert(errorThrown);});
         }
 
         function onReady() {
@@ -75,7 +97,7 @@
 
         // load chart lib
         google.load('visualization', '1', {
-            packages: ['corechart', 'annotationchart']
+            packages: ['corechart', 'annotationchart', 'gauge']
         });
 
         // call drawChart once google charts is loaded
@@ -86,4 +108,5 @@
 {% endblock %}
 {% block content %}
     <div id="chart" style="width: 100%;"></div>
+    <div id="gauge" style="width: 100%;"></div>
 {% endblock %}

@@ -141,6 +141,34 @@ def getdata():
         return json.dumps(result)
 
 
+@app.route('/getlast/<identifier>/<type_>')
+def get_last(identifier, type_):
+    callback = request.args.get('callback')
+
+    last_value = None
+    last = models.Measurement.last(identifier, type_).fetch(1)
+    if last:
+        last_value = last[0].value
+
+    # If we have nothing, try the blocks
+    if not last_value:
+        last_block = models.MeasurementBlock.last_block(identifier, type_).fetch(1)
+        if last_block:
+            measurements = json.loads(last_block[0].values)
+            last_value = measurements[-1][1]
+
+
+    if last_value:
+        last_value = float(last_value)
+
+    if callback:
+        # if we have a callback we are in JSONP mode
+        return callback + "(" + json.dumps(last_value) + ")"
+    else:
+        return json.dumps(last_value)
+
+
+
 @app.route('/tasks/alerts')
 def alerts():
     """

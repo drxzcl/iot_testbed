@@ -46,3 +46,10 @@ indexes:
   - name: identifier
   - name: type
   - name: last
+    direction: desc
+
+- kind: MeasurementBlock
+  properties:
+  - name: identifier
+  - name: type
+  - name: last
