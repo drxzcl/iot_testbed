@@ -157,7 +157,6 @@ def get_last(identifier, type_):
             measurements = json.loads(last_block[0].values)
             last_value = measurements[-1][1]
 
-
     if last_value:
         last_value = float(last_value)
 
@@ -166,7 +165,6 @@ def get_last(identifier, type_):
         return callback + "(" + json.dumps(last_value) + ")"
     else:
         return json.dumps(last_value)
-
 
 
 @app.route('/tasks/alerts')
@@ -183,15 +181,31 @@ def alerts():
         if not measurements:
             continue
         measurement = measurements[0]
-        if (alert.higher and (float(measurement.value) > float(alert.value))) or \
-                (not alert.higher and (float(measurement.value) < float(alert.value))):
-            # alert!
-            funcname, params = json.loads(alert.alertfunction)
-            func = getattr(alertfunctions, funcname)
-            func(measurement, params)
-            # update the alert
-            alert.last_triggered = now
-            alert.put()
+
+        # Add a synthetic measurement for the time since last entry
+        logging.info(measurement.timestamp)
+        measurement.period = "%.2f hours" % (((now - measurement.timestamp).total_seconds()) / 3600.0)
+        logging.info('Last measurement for %s/%s was %s ago.' % (alert.identifier, alert.type, measurement.period))
+
+        if alert.alert_type == "value":
+            if (alert.higher and (float(measurement.value) > float(alert.value))) or \
+                    (not alert.higher and (float(measurement.value) < float(alert.value))):
+                # alert!
+                funcname, params = json.loads(alert.alertfunction)
+                func = getattr(alertfunctions, funcname)
+                func(measurement, params)
+                # update the alert
+                alert.last_triggered = now
+                alert.put()
+        elif alert.alert_type == "last_entry":
+            if alert.higher and (measurement.timestamp + datetime.timedelta(seconds=int(alert.value)) > now):
+                # Alert!
+                funcname, params = json.loads(alert.alertfunction)
+                func = getattr(alertfunctions, funcname)
+                func(measurement, params)
+                # update the alert
+                alert.last_triggered = now
+                alert.put()
 
     return "Ok."
 

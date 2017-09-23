@@ -54,6 +54,7 @@ class MeasurementBlock(ndb.Model):
 
 class Alert(ndb.Model):
     identifier = ndb.StringProperty()
+    alert_type = ndb.StringProperty()
     type = ndb.StringProperty()
     value = ndb.StringProperty()
     last_triggered = ndb.DateTimeProperty(default=datetime.datetime(1990, 1, 1, 0, 0, 0))
