@@ -198,7 +198,7 @@ def alerts():
                 alert.last_triggered = now
                 alert.put()
         elif alert.alert_type == "last_entry":
-            if alert.higher and (measurement.timestamp + datetime.timedelta(seconds=int(alert.value)) > now):
+            if alert.higher and (measurement.timestamp + datetime.timedelta(seconds=int(alert.value)) < now):
                 # Alert!
                 funcname, params = json.loads(alert.alertfunction)
                 func = getattr(alertfunctions, funcname)
